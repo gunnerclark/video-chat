@@ -4,5 +4,19 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+
+body {
+  height: 100%;
+}
+
+.videos {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+}
+
+.videos video {
+  display: inline-block;
+  max-height: 38vh;
 }
