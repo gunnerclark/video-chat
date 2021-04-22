@@ -37,16 +37,16 @@ const hangupButton = document.getElementById('hangupButton');
 
 // 1. Setup media sources
 
-const displayMediaOptions = {
-  video: {
-    cursor: 'always'
-  },
-  audio: false
-}
+// const displayMediaOptions = {
+//   video: {
+//     cursor: 'always'
+//   },
+//   audio: false
+// }
 
 webcamButton.onclick = async () => {
-  localStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: false });
-  //localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  // localStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: false });
+  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   remoteStream = new MediaStream();
 
   // Push tracks from local stream to peer connection
@@ -55,8 +55,8 @@ webcamButton.onclick = async () => {
   });
 
   // Pull tracks from remote stream, add to video stream
-  pc.ontrack = event => {
-    event.streams[0].getTracks().forEach(track => {
+  pc.ontrack = (event) => {
+    event.streams[0].getTracks().forEach((track) => {
       remoteStream.addTrack(track);
     });
   };
@@ -64,6 +64,10 @@ webcamButton.onclick = async () => {
   // Apply to video elements in the DOM (Babylon.js ref: apply to canvas element or something similar here)
   webcamVideo.srcObject = localStream;
   remoteVideo.srcObject = remoteStream;
+  
+  callButton.disabled = false;
+  answerButton.disabled = false;
+  webcamButton.disabled = true;
 };
 
 // 2. Create an offer
@@ -103,7 +107,7 @@ callButton.onclick = async () => {
   });
 
   // When answered, add candidate to peer connection
-  answerCandidates.onSnapshot(snapshot => {
+  answerCandidates.onSnapshot((snapshot) => {
     snapshot.docChanges().forEach((change) => {
       if (change.type === 'added') {
         const candidate = new RTCIceCandidate(change.doc.data());
@@ -111,6 +115,8 @@ callButton.onclick = async () => {
       }
     });
   });
+
+  hangupButton.disabled = false;
 };
 
 // 3. Answer the call with the unique ID
@@ -118,6 +124,7 @@ answerButton.onclick = async () => {
   const callId = callInput.value;
   const callDoc = firestore.collection('calls').doc(callId);
   const answerCandidates = callDoc.collection('answerCandidates');
+  const offerCandidates = callDoc.collection('offerCandidates');
 
   // update answer candidate collection when a new candidate is generated
   pc.onicecandidate = event => {
